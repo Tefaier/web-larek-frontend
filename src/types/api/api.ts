@@ -1,7 +1,7 @@
 import { ApiListResponse } from "../../components/base/api"
 
 export type ErrorResponse = {
-    error: string
+    error?: string
 }
 
 export type Product = {
@@ -15,7 +15,7 @@ export type Product = {
 
 export type ProductList = ApiListResponse<Product>
 
-export type ProductResponse = Product | ErrorResponse
+export type ProductResponse = Product & ErrorResponse
 
 export type ProductOrderRequest = {
     payment: string
@@ -29,4 +29,4 @@ export type ProductOrderRequest = {
 export type ProductOrderResponse = {
     id: string
     total: number
-} | ErrorResponse
+} & ErrorResponse
