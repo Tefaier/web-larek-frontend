@@ -9,18 +9,18 @@ export class BasketViewUI extends UIElement<undefined> {
     static template: HTMLTemplateElement = ensureElement<HTMLTemplateElement>("#basket");
 
     productListController: ProductListController;
-    container: HTMLElement;
     order: Order;
+    toRedirect: UIElement<any>;
 
     priceField: HTMLElement | null;
     buttonField: HTMLButtonElement | null;
     listField: HTMLElement | null;
 
-    constructor(productListController: ProductListController, container: HTMLElement, order: Order) {
+    constructor(productListController: ProductListController, order: Order, toRedirect: UIElement<any>) {
         super();
         this.productListController = productListController;
-        this.container = container;
         this.order = order;
+        this.toRedirect = toRedirect;
     }
 
     render(data?: undefined): HTMLElement {
@@ -35,7 +35,7 @@ export class BasketViewUI extends UIElement<undefined> {
             e.preventDefault();
 
             // initiate form rendering
-            AppData.eventSystem.emit(eventNames.openModal as string, );
+            AppData.eventSystem.emit(eventNames.openModal as string, {object: this.toRedirect});
         })
 
         return copy;

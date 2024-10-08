@@ -1,4 +1,4 @@
-import { InputFieldStat, SubmitFieldStat } from "../../types";
+import { ButtonFieldStat, InputFieldStat, SubmitFieldStat } from "../../types";
 import { cloneTemplate } from "../../utils/utils";
 import { UIElement } from "../base/view";
 
@@ -6,13 +6,15 @@ export class FormField extends UIElement<undefined> {
     template: HTMLTemplateElement;
     formField: HTMLElement | null;
     inputFields: InputFieldStat[];
+    buttonFields: ButtonFieldStat[];
     submitField: SubmitFieldStat;
     errorsField: HTMLElement | null;
 
-    constructor(inputFields: InputFieldStat[], template: HTMLTemplateElement, submitField: SubmitFieldStat) {
+    constructor(inputFields: InputFieldStat[], buttonFields: ButtonFieldStat[], template: HTMLTemplateElement, submitField: SubmitFieldStat) {
         super();
         this.template = template;
         this.inputFields = inputFields;
+        this.buttonFields = buttonFields;
         this.submitField = submitField;
     }
 
@@ -22,6 +24,14 @@ export class FormField extends UIElement<undefined> {
             field.element = copy.querySelector(field.locateQuery);
             field.element.addEventListener('focusout', () => {
                 field.onInput(this, field.element.value);
+                this.update();
+            });
+        });
+
+        this.buttonFields.forEach((field) => {
+            field.element = copy.querySelector(field.locateQuery);
+            field.element.addEventListener('click', () => {
+                field.onClick(this);
                 this.update();
             });
         });
@@ -45,6 +55,12 @@ export class FormField extends UIElement<undefined> {
 
         for (const field of this.inputFields) {
             const result = field.validation(field.element.value);
+            if (result.errorMessage) errorMessages.push(result.errorMessage);
+            passed = passed && result.passed;
+        }
+
+        for (const field of this.buttonFields) {
+            const result = field.validation();
             if (result.errorMessage) errorMessages.push(result.errorMessage);
             passed = passed && result.passed;
         }

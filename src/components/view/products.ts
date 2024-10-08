@@ -1,4 +1,4 @@
-import { ListSettings } from "../../types";
+import { ListSettings, ModalOpenInfo } from "../../types";
 import { Product } from "../../types/api/api";
 import { cloneTemplate, ensureElement } from "../../utils/utils";
 import { AppData } from "../base/appData";
@@ -17,6 +17,7 @@ export class ProductOverviewUI extends ProductUI {
         const title = copy.querySelector(".card__title");
         const image = copy.querySelector(".card__image") as HTMLImageElement;
         const price = copy.querySelector(".card__price");
+        (copy.querySelector(".card") as HTMLButtonElement).addEventListener('click', () => AppData.eventSystem.emit(eventNames.openModal as string, {object: new ProductDetailedUI(), data: data}))
         category.textContent = data.category;
         title.textContent = data.title;
         image.src = data.image;
