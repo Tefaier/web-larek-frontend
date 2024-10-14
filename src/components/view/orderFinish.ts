@@ -19,12 +19,12 @@ export class OrderFinishUI extends UIElement<undefined> {
 
         const messageField = copy.querySelector(".order-success__description");
         this.order.makeOrder().then((value) => {
-            messageField.textContent = value.error == undefined ? "Заказ провалился: " + value.error : `Списано ${value.total} синапсов`;
+            messageField.textContent = value.error == undefined ? `Списано ${value.total} синапсов` : "Заказ провалился: " + value.error;
         });
         
-        const buttonField = copy.querySelector(".button order-success__close");
+        const buttonField = copy.querySelector(".order-success__close");
         buttonField.textContent = "За новыми покупками!";
-        buttonField.addEventListener('submit', (e) => {
+        buttonField.addEventListener('click', (e) => {
             e.preventDefault();
             AppData.eventSystem.emit(eventNames.closeModal as string);
         })

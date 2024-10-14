@@ -17,11 +17,11 @@ export class ProductOverviewUI extends ProductUI {
         const title = copy.querySelector(".card__title");
         const image = copy.querySelector(".card__image") as HTMLImageElement;
         const price = copy.querySelector(".card__price");
-        (copy.querySelector(".card") as HTMLButtonElement).addEventListener('click', () => AppData.eventSystem.emit(eventNames.openModal as string, {object: new ProductDetailedUI(), data: data}))
+        (copy as HTMLButtonElement).addEventListener('click', () => AppData.eventSystem.emit(eventNames.openModal as string, {object: new ProductDetailedUI(), data: data}))
         category.textContent = data.category;
         title.textContent = data.title;
         image.src = data.image;
-        price.textContent = data.price.toString();
+        price.textContent = data.price ? data.price.toString() : "бесценно";
         return copy;
     }
 
@@ -45,8 +45,11 @@ export class ProductDetailedUI extends ProductUI {
         title.textContent = data.title;
         text.textContent = data.description;
         image.src = data.image;
-        price.textContent = data.price.toString();
-        basketButton.addEventListener('onClick', () => AppData.eventSystem.emit(eventNames.addItemToBasket as string, data))
+        price.textContent = data.price ? data.price.toString() : "бесценно";
+        if (data.price){
+            basketButton.addEventListener('click', () => AppData.eventSystem.emit(eventNames.addItemToBasket as string, data));
+            basketButton.addEventListener('click', () => AppData.eventSystem.emit(eventNames.closeModal as string));
+        }
         return copy;
     }
 
@@ -65,7 +68,7 @@ export class ProductBasketUI extends ProductUI {
         const deleteButton = copy.querySelector(".card__button");
         title.textContent = data.title;
         price.textContent = data.price.toString();
-        deleteButton.addEventListener('onClick', () => {
+        deleteButton.addEventListener('click', () => {
             AppData.eventSystem.emit(eventNames.removeItemFromBasket as string, data);
             AppData.eventSystem.emit(eventNames.updateModal as string);
     });
@@ -95,7 +98,7 @@ export class ProductListUI extends UIElement<Product[]> {
         }
 
         if (this.settings.countWithClass) {
-            ul.querySelectorAll(this.settings.countWithClass).forEach((value, key) => {
+            ul.querySelectorAll("." + this.settings.countWithClass).forEach((value, key) => {
                 value.textContent = (key + 1).toString();
             })
         }

@@ -1,6 +1,8 @@
 import { ProductFilter } from "../../types";
 import { Product, ProductList } from "../../types/api/api";
 import { Api } from "../base/api";
+import { AppData } from "../base/appData";
+import { eventNames } from "../base/events";
 
 export interface IProductList {
     getProduct(id: string): Product | null;
@@ -17,8 +19,9 @@ export class ProductListAPI implements IProductList {
     }
 
     init() {
-        this.source.get("").then((data) => {
+        this.source.get("/product/").then((data) => {
             this.loadedProducts = data as ProductList;
+            AppData.eventSystem.emit(eventNames.infoLoaded as string);
         });
     }
 

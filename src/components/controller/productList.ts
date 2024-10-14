@@ -15,7 +15,7 @@ export class ProductListController {
         this.productsList = productsList;
 
         if (renderOn) {
-            AppData.eventSystem.on(renderOn, () => this.render);
+            AppData.eventSystem.on(renderOn, () => this.render());
         }
     }
 

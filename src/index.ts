@@ -31,7 +31,7 @@ const inputFields2: InputFieldStat[] = [
         type: "string",
         validation: defaultInputFieldStats[0],
         onInput: (form, value) => {
-            order.orderInfo.address = value;
+            order.orderInfo.email = value;
             form.update();
         },
         locateQuery: "input[name='email']"
@@ -59,7 +59,7 @@ const form2 = new FormField(inputFields2, buttonFields2, form2Template, form2Sub
 const inputFields1: InputFieldStat[] = [
     {
         type: "string",
-        validation: defaultInputFieldStats[0],
+        validation: defaultInputFieldStats[1],
         onInput: (form, value) => {
             order.orderInfo.address = value;
             form.update();
@@ -124,6 +124,7 @@ const basket = new BasketViewUI(productListControllerBasket, order, form1);
 const basketCounter = document.querySelector(".header__basket-counter") as HTMLElement;
 eventSystem.on(eventNames.addItemToBasket as string, () => {basketCounter.textContent = order.order.size.toString()});
 eventSystem.on(eventNames.removeItemFromBasket as string, () => {basketCounter.textContent = order.order.size.toString()});
+eventSystem.on(eventNames.basketEmpty as string, () => {basketCounter.textContent = order.order.size.toString()});
 
 const basketOpener = document.querySelector(".header__basket") as HTMLButtonElement;
 basketOpener.addEventListener('click', () => {
@@ -132,8 +133,5 @@ basketOpener.addEventListener('click', () => {
 
 const gallery = document.querySelector(".gallery") as HTMLElement;
 const productListGallery = new ProductListUI(new ProductOverviewUI(), {useExisting: gallery});
-const productListControllerGallery = new ProductListController(() => true, productListApi, productListGallery);
-productListControllerGallery.render();
-
-
+const productListControllerGallery = new ProductListController(() => true, productListApi, productListGallery, eventNames.infoLoaded as string);
 

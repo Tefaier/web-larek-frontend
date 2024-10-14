@@ -7,6 +7,8 @@ export class ModalWindowUI extends UIElement<ModalOpenInfo<any>> {
     container: HTMLElement
     activeObjectContainer: HTMLElement | undefined
     openedObject: UIElement<any> | undefined;
+    closeListener: EventListener
+    closeIgnore: boolean = true
 
     constructor(container: HTMLElement) {
         super()
@@ -21,17 +23,18 @@ export class ModalWindowUI extends UIElement<ModalOpenInfo<any>> {
         
         eventSystem.on(eventNames.openModal, (data: ModalOpenInfo<any>) => this.render(data));
         eventSystem.on(eventNames.updateModal, () => this.update());
-        eventSystem.on(eventNames.closeModal, this.hide);
+        eventSystem.on(eventNames.closeModal, () => this.hide());
 
-        this.container.querySelector(".modal__close").addEventListener('click', this.closeEvent)
-        this.activeObjectContainer.addEventListener('click', (e) => e.stopPropagation)
-        document.addEventListener('click', this.closeEvent);
+        this.container.querySelector(".modal__close").addEventListener('click', (e) => this.closeEvent(e))
+        this.activeObjectContainer.addEventListener('click', (e) => e.stopPropagation())
+        this.closeListener = this.closeEvent.bind(this);
     }
 
     render(data: ModalOpenInfo<any>): HTMLElement {
         this.openedObject = data.object;
-        this.show();
+        this.activeObjectContainer.innerHTML = "";
         this.activeObjectContainer.appendChild(data.object.render(data.data));
+        this.show();
         return this.container;
     }
 
@@ -39,19 +42,31 @@ export class ModalWindowUI extends UIElement<ModalOpenInfo<any>> {
         this.openedObject.update();
     }
 
-    closeEvent(e: MouseEvent) {
+    closeEvent(e: Event) {
         e.preventDefault();
-
         this.hide();
     }
 
     hide() {
+        if (this.closeIgnore) {
+            this.closeIgnore = false;
+            return;
+        }
         this.openedObject = undefined;
         this.activeObjectContainer.innerHTML = "";
-        // hide self as well
+        document.removeEventListener('click', this.closeListener);
+        this.container.classList.remove("modal_active");
     }
 
     show() {
-        // unhide self
+        this.preventInstaClose();
+        document.addEventListener('click', this.closeListener);
+        this.container.classList.add("modal_active");
+    }
+
+    async preventInstaClose() {
+        this.closeIgnore = true;
+        await new Promise(resolve => setTimeout(resolve, 200));
+        this.closeIgnore = false;
     }
 }

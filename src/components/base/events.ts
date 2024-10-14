@@ -7,7 +7,8 @@ export const eventNames: {[key: string]: EventName} = {
     addItemToBasket: "add:basket",
     removeItemFromBasket: "remove:basket",
     makeOrder: "make:order",
-
+    infoLoaded: "loading:finished",
+    basketEmpty: "basket:empty"
 }
 
 type EventName = string | RegExp;

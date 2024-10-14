@@ -29,9 +29,10 @@ export class BasketViewUI extends UIElement<undefined> {
         this.listField = copy.querySelector(".basket__list");
         this.buttonField = copy.querySelector(".basket__button"); 
         this.productListController.productsList.settings.useExisting = this.listField;
+        this.productListController.productsList.settings.countWithClass = "basket__item-index";
         this.update();
 
-        this.buttonField.addEventListener('submit', (e) => {
+        this.buttonField.addEventListener('click', (e) => {
             e.preventDefault();
 
             // initiate form rendering

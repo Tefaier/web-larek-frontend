@@ -21,7 +21,7 @@ export abstract class Order {
     totalCost(): number {
         return this.productList
         .getProducts((product) => this.order.has(product.id))
-        .reduce((value, product) => value + product.price, 0);
+        .reduce((value, product) => value + (product.price ? product.price : 0), 0);
     }
 }
 
@@ -43,12 +43,13 @@ export class OrderApi extends Order {
     
     makeOrder(): Promise<ProductOrderResponse> {
         this.updateOrderInfo();
-        const promise = this.source.post("", this.orderInfo) as Promise<ProductOrderResponse>;
+        const promise = this.source.post("/order", this.orderInfo) as Promise<ProductOrderResponse>;
         
         promise.then((result) => {
             if (result.error == undefined) {
                 this.order = new Set<string>();
                 this.updateOrderInfo();
+                AppData.eventSystem.emit(eventNames.basketEmpty as string);
             }
         })
         return promise;

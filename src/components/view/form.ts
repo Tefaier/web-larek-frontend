@@ -22,7 +22,7 @@ export class FormField extends UIElement<undefined> {
         const copy = cloneTemplate(this.template);
         this.inputFields.forEach((field) => {
             field.element = copy.querySelector(field.locateQuery);
-            field.element.addEventListener('focusout', () => {
+            field.element.addEventListener('input', () => {
                 field.onInput(this, field.element.value);
                 this.update();
             });
@@ -37,7 +37,11 @@ export class FormField extends UIElement<undefined> {
         });
 
         this.submitField.element = copy.querySelector(this.submitField.locateQuery);
-        this.submitField.element.addEventListener('submit', this.submitField.onSubmit);
+        this.submitField.element.addEventListener('click', (e: Event) => {
+            // console.log("form submit");
+            e.preventDefault();
+            this.submitField.onSubmit();
+        });
 
         this.errorsField = copy.querySelector(".form__errors");
 
@@ -50,6 +54,7 @@ export class FormField extends UIElement<undefined> {
     }
 
     validate() {
+        console.log("validate");
         let passed = true;
         const errorMessages: string[] = [];
 
@@ -64,6 +69,13 @@ export class FormField extends UIElement<undefined> {
             if (result.errorMessage) errorMessages.push(result.errorMessage);
             passed = passed && result.passed;
         }
+
+        /*
+        console.log(this.inputFields);
+        console.log(this.buttonFields);
+        console.log(passed);
+        console.log(errorMessages);
+        */
 
         this.submitField.element.disabled = !passed;
         this.setErrorMessage(errorMessages);
