@@ -47,7 +47,7 @@ yarn build
 ### Model
 1. Интерфейс IProductList
 Отвечает за получение, хранение и возврат по запросы активных продуктов
-- init() - загружает ифнормацию о продуктах и сохраняет их у себя в переменной для последующего возврата. Должен вызываться из конструктора
+- init() - загружает ифнормацию о продуктах и сохраняет их у себя в переменной для последующего возврата. Должен вызываться из конструктора. Когда заканчивает создает событие, так как является асинхронным.
 - getProduct(id: string): Product? - позволяет получать продукт если он есть (вызов событием)
 - getProducts(filter?: ProductFilter): Product[] - позволяет получать список всех продуктов или только тех, которые подходят под фильтр (вызов контроллером)
 
@@ -56,13 +56,14 @@ yarn build
 
 3. Абстрактный класс Order
 Отвечает за обработку запроса платежа и выдачу ответа, хранение состояния заказа
-- order: string[] - текущий список в корзине по id предметов
+- order: Set<string> - текущий список в корзине по id предметов
 - productList: IProductList - объект, откуда брать информацию о товарах
 - orderInfo: Partial<ProductOrderRequest> - информация о текущей заполненной информации для заказа
 - makeOrder(order: ProductOrderRequest): Promise<ProductOrderResponse> - делает запрос и возвращает промис с ответом (вызов напрямую)
 - init() - вызывается в конструкторе, подписывается на события
 - addProduct(id: string) - добавляет продукт и проверяет, что в productList есть такой id (вызов событием)
 - removeProduct(id: string) - убирает продукт (вызов событием)
+- totalCost() - вычисляет суммарную цену заказа
 
 4. Класс OrderAPI extends Order
 Класс совершающй покупку на основе взаимодействия с сервером по api
@@ -71,19 +72,19 @@ yarn build
 1. Абстрактный класс UIElement<T extends Object>
 Базовый класс для всех отображаемых js элементов
 - render(data?: T): HTMLElement - возвращает свой HTMLElement, где подставлено необходимое содержание из data
-- update() - обновляет отображаемое содержимое, поддерживается только теми у кого экземпляр привящан к элементам на странице
+- update() - обновляет отображаемое содержимое, поддерживается только теми у кого экземпляр привязан к элементам на странице
 
-2. Класс ModalWindowUI extends UIElement<T extends UIElement>
+2. Класс ModalWindowUI extends UIElement<ModalOpenInfo<any>>
 Создает модальное окно, которое может отображать произвольное содержание
 - container: HTMLElement - родитель для отобрадежения
 - activeWindow: HTMLElement | undefined - существующий элемент модального окна в html
 - openedObject: T | undefined - что сейсас открыто
 - constructor(container: HTMLElement) - конструктор с передачей контейнера, где модальное окно должно лежать в html
 - init() - вызывается к конструкторе, подписывается на соответствующие события
-- open(data: T) - вызывает render и ставит результат в container и activeWindow (вызов событием)
 - close() - вызывается для закрытия окна (вызов напрямую)
-- render(data: T): HTMLElement - создает окружение модального окна, ивенты на закрытия, ставит в содержимое результат data.render(), заполняет activeWindow и openedObject
+- render(data: T): HTMLElement - создает окружение модального окна, ивенты на закрытия, ставит в содержимое результат data.object.render(), заполняет activeWindow и openedObject
 - update() - вызывает openedObject.update() (вызов событием)
+- preventInstaClose() - используется вместе с открытием/закрытием окна, чтобы не закрываться сразу же в ответ на событие, которое его открыло же (открытие через eventSystem, потом клик всплывает до document и закрывает его - эта функция правит баг)
 
 3. Класс BasketViewUI extends UIElement<undefined>
 Окно корзины, экземпляр корзины привязан к отображаемой единице, потому что нужно обновлять данные
@@ -93,10 +94,13 @@ yarn build
 
 5. Класс FormField extends UIElement<undefined>
 Произвольное поле формы
-- constructor(inputFields: InputFieldStat[], submitText: string, onSubmit: () => void) - конструктор с получением информации для создания произвольного поля ввода
+- inputFields: InputFieldStat[] - информация о полях ввода
+- buttonFields: ButtonFieldStat[] - информация о кнопках
+- submitField: SubmitFieldStat - информация о кнопке submit
+- используются вместе для конфигурации через конструктор экземпляра формы
 - render(): HTMLElement - создает поля, пишет ссылки в inputFields, создает вызовы (update у себя на изменение значений)
 - validate() - валидирует поля и активирует sumbit
-- update() - вызывает validate, вызывает onInput у inputFields
+- update() - вызывает validate, вызывается при input у inputFields
 
 7. Класс OrderFinishUI extends UIElement<T extends UIElement>
 - constructor(order: Order) - конструктор с заказом, к которому прикреплена UI
@@ -122,19 +126,20 @@ yarn build
 12. Класс ProductBasketUI extends ProductUI
 Класс для отображения продукта, как часть списка в корзине
 
-
 ### Controller
 1. Класс ProductListController
 Контроллер для связи источника продуктов, фильтра продуктов и нужного ui списком с нужным типом отображения продуктов
-- constructor(filter: ProductFilter, productsSource: IProductList, productsList: ProductListUI, container: HTMLElement)
+- constructor(filter: ProductFilter, productsSource: IProductList, productsList: ProductListUI, renderOn?: string) - получение компонентов и строка ивента, на который обновлять содержимое
 - render(): HTMLElement - вызывает productsList.render() подставляя результат фильтра
 - getFiltered(): Product[] - результат фильтра или то, что сейсас показывается в render
 
 ### Types
 Некоторые из типов, используемые в проекте
 - ProductFilter = (arg: Product) => boolean
-- ListSettings = {columns: number}
-- OrderFields = {paymentMethod: HTMLElement, deliveryAddress: HTMLElement, email: HTMLElement, phoneNumber: HTMLElement, confirmButton1: HTMLElement, confirmButton2: HTMLElement}
+- ListSettings - возможные настройки для списка
 - InputValue = string | number
-- InputFieldStat = {value?: object, options?: object[], element?: HTMLElement, type: string, validation: ValidationFunction, onInput: (value: object) => void} - для передачи информации о полях ввода
+- InputFieldStat - для передачи информации о полях ввода
+- ButtonFieldStat - для передачи информации о кнопках в форме
+- SubmitFieldStat - для передачи информации о кнопке submit в форме
+- ModalOpenInfo<T> - используется для передачи информации модальному окну для рендера
 - defaultInputFieldStats: {[key: number]: ValidationFunction} - для значений по умолчанию различных типов полей ввода
