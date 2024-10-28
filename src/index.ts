@@ -8,6 +8,7 @@ import { BasketViewUI } from './components/view/basket';
 import { FormField } from './components/view/form';
 import { ModalWindowUI } from './components/view/modal';
 import { OrderFinishUI } from './components/view/orderFinish';
+import { PageLayout } from './components/view/page';
 import { ProductBasketUI, ProductListUI, ProductOverviewUI } from './components/view/products';
 import './scss/styles.scss';
 import { ButtonFieldStat, defaultInputFieldStats, InputFieldStat, SubmitFieldStat } from './types';
@@ -20,8 +21,10 @@ const api = new Api(API_URL);
 const productListApi = new ProductListAPI(api);
 const order = new OrderApi(api, productListApi);
 
-const modalContainet = document.querySelector("#modal-container") as HTMLElement;
-const modal = new ModalWindowUI(modalContainet);
+const pageContainer = document.querySelector(".page") as HTMLElement;
+const page = new PageLayout(pageContainer);
+const modalContainer = document.querySelector("#modal-container") as HTMLElement;
+const modal = new ModalWindowUI(modalContainer);
 
 const successTempate = document.querySelector("#success") as HTMLTemplateElement;
 const orderFinish = new OrderFinishUI(order);
@@ -135,3 +138,12 @@ const gallery = document.querySelector(".gallery") as HTMLElement;
 const productListGallery = new ProductListUI(new ProductOverviewUI(), {useExisting: gallery});
 const productListControllerGallery = new ProductListController(() => true, productListApi, productListGallery, eventNames.infoLoaded as string);
 
+// Блокируем прокрутку страницы если открыта модалка
+eventSystem.on(eventNames.openModal as string, () => {
+    page.locked = true;
+});
+
+// ... и разблокируем
+eventSystem.on(eventNames.closeModal as string, () => {
+    page.locked = false;
+});

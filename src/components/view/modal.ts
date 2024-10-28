@@ -44,14 +44,14 @@ export class ModalWindowUI extends UIElement<ModalOpenInfo<any>> {
 
     closeEvent(e: Event) {
         e.preventDefault();
-        this.hide();
-    }
-
-    hide() {
         if (this.closeIgnore) {
             this.closeIgnore = false;
             return;
         }
+        AppData.eventSystem.emit(eventNames.closeModal as string);
+    }
+
+    hide() {
         this.openedObject = undefined;
         this.activeObjectContainer.innerHTML = "";
         document.removeEventListener('click', this.closeListener);
